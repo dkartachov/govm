@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dkartachov/govm/pkg"
+	"github.com/dkartachov/govm/pkg/semver"
 	"github.com/dkartachov/govm/pkg/targz"
 	"github.com/spf13/cobra"
 )
@@ -63,7 +63,7 @@ func validate(args []string) error {
 
 	version := args[0]
 
-	if !pkg.ValidVersion(version) {
+	if !semver.Valid(version) {
 		return fmt.Errorf("invalid version %s", version)
 	}
 
