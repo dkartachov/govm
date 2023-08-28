@@ -15,11 +15,13 @@ var rootCmd = &cobra.Command{
 	Short: "Manage different versions of Go on your machine",
 	Long: `Govm is a CLI application that allows developers to manage
 different versions of Go on their machine. Add, remove and switch
-between locally installed versions with ease.
+between locally installed versions with ease. You can also test
+your application on a different version without switching by running 
+the locally installed binary directly. For example: go1.20.7 run main.go
 
-You can also simply use this tool to easily upgrade to the latest version
-of Go. We all know how tedious it is to navigate to the website, download
-the latest release, extract the archive, remove the previous installation...`,
+"Why spend 5 minutes doing something when you can spend
+5 days automating it?" - Anonymous
+`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
