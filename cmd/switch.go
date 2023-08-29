@@ -23,15 +23,16 @@ to a different version. If you simply want to test your app on a different versi
 you should use the locally installed binary directly. For example: 
 
 go1.20.7 run main.go`,
-	Aliases: []string{"swap"},
+	Aliases: []string{"use"},
 	Args: func(cmd *cobra.Command, args []string) error {
-		return validate(args)
+		return validateArgs(args)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		version := args[0]
 
-		if !installed(version) {
-			log.Fatalf("version %v is not installed", version)
+		if !versionExists(version) {
+			log.Printf("version %v is not installed", version)
+			return
 		}
 
 		home, _ := os.UserHomeDir()
@@ -47,16 +48,16 @@ go1.20.7 run main.go`,
 	},
 }
 
-func installed(version string) bool {
+func versionExists(version string) bool {
 	home, _ := os.UserHomeDir()
-	d, err := os.ReadDir(filepath.Join(home, ".govm/versions"))
+	dir, err := os.ReadDir(filepath.Join(home, ".govm/versions"))
 
 	if err != nil {
 		log.Fatalf("error reading directory: %v", err)
 	}
 
-	for _, f := range d {
-		if f.Name() == version {
+	for _, e := range dir {
+		if version == e.Name() {
 			return true
 		}
 	}

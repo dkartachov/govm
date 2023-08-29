@@ -24,10 +24,16 @@ from https://go.dev/dl/.`,
 	Aliases: []string{"i"},
 	Example: "govm install 1.21.0",
 	Args: func(cmd *cobra.Command, args []string) error {
-		return validate(args)
+		return validateArgs(args)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		version := args[0]
+
+		if versionExists(version) {
+			log.Printf("version %s is already installed", version)
+			return
+		}
+
 		url := fmt.Sprintf("https://go.dev/dl/go%s.linux-amd64.tar.gz", version)
 		resp, err := http.Get(url)
 
@@ -56,7 +62,7 @@ from https://go.dev/dl/.`,
 	},
 }
 
-func validate(args []string) error {
+func validateArgs(args []string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("expected only one argument")
 	}

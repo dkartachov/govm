@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/dkartachov/govm/pkg/semver"
@@ -20,9 +19,10 @@ import (
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List all locally installed versions",
-	Long:    "List all locally installed versions of Go.",
+	Use:   "list",
+	Short: "List versions of Go",
+	Long: `List all locally installed versions of Go by default.
+Specify --remote flag to list available versions to download.`,
 	Aliases: []string{"ls"},
 	Run: func(cmd *cobra.Command, args []string) {
 		remote, _ := cmd.Flags().GetBool("remote")
@@ -43,8 +43,8 @@ func list() {
 		log.Fatal(err)
 	}
 
-	for i := len(d) - 1; i >= 0; i-- {
-		fmt.Println(d[i].Name())
+	for _, e := range d {
+		fmt.Println(e.Name())
 	}
 }
 
@@ -78,10 +78,11 @@ func listRemote() {
 		}
 	}
 
-	sort.SliceStable(versions, func(i, j int) bool {
-		// TODO implement version comparison
-		return true
-	})
+	err = semver.Sort(versions)
+
+	if err != nil {
+		log.Fatalf("error sorting versions: %v", err)
+	}
 
 	for _, v := range versions {
 		fmt.Println(v)
