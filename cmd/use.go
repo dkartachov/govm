@@ -11,19 +11,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// switchCmd represents the switch command
-var switchCmd = &cobra.Command{
-	Use:   "switch [version]",
-	Short: "Change the preferred version of Go on your machine",
-	Long: `Change the preferred version of Go on your machine to another locally 
-installed version. If the specified version does not exist it will be downloaded. 
+// useCmd represents the use command
+var useCmd = &cobra.Command{
+	Use:   "use [version]",
+	Short: "Change the default version of Go on your machine",
+	Long: `Change the default version of Go on your machine to another locally 
+installed version. This version will be used when running 'go'. 
 
-This version will be used when running 'go'. This change persists until you switch 
-to a different version. If you simply want to test your app on a different version 
-you should use the locally installed binary directly. For example: 
+This change persists until you switch to a different version. 
+If you simply want to test your app on a different version you should 
+use the locally installed binary directly. For example: 
 
 go1.20.7 run main.go`,
-	Aliases: []string{"use"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		return validateArgs(args)
 	},
@@ -66,5 +65,5 @@ func versionExists(version string) bool {
 }
 
 func init() {
-	rootCmd.AddCommand(switchCmd)
+	rootCmd.AddCommand(useCmd)
 }
