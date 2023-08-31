@@ -8,6 +8,13 @@ import (
 	"strconv"
 )
 
+type Order int
+
+const (
+	Desc Order = -1
+	Asc  Order = 1
+)
+
 // Valid checks if the given version follows semantic versioning format
 // such as "1.20.7" OR "1.20" OR "1".
 func Valid(version string) bool {
@@ -34,7 +41,7 @@ func ValidP(version string, prefix string) bool {
 
 // Sort sorts an array of version strings.
 // Returns an error if a version does not follow the semantic versioning format.
-func Sort(versions []string) error {
+func Sort(versions []string, o Order) error {
 	regex := regexp.MustCompile(`^(?P<major>\d+)(\.(?P<minor>\d+))?(\.(?P<patch>\d+))?$`)
 	majorIndex := regex.SubexpIndex("major")
 	minorIndex := regex.SubexpIndex("minor")
@@ -60,12 +67,12 @@ func Sort(versions []string) error {
 				iPatch, _ := strconv.ParseInt(iMatches[patchIndex], 10, 64)
 				jPatch, _ := strconv.ParseInt(jMatches[patchIndex], 10, 64)
 
-				return iPatch < jPatch
+				return int64(o)*(iPatch-jPatch) < 0
 			} else {
-				return iMinor < jMinor
+				return int64(o)*(iMinor-jMinor) < 0
 			}
 		} else {
-			return iMajor < jMajor
+			return int64(o)*(iMajor-jMajor) < 0
 		}
 	})
 
