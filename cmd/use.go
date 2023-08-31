@@ -59,6 +59,8 @@ go1.20.7 run main.go`,
 		if err := os.Symlink(filepath.Join(targetDir, previousVersion, "bin/go"), filepath.Join(home, ".govm/go"+previousVersion)); err != nil {
 			log.Fatal(err)
 		}
+
+		log.Printf("go ==> %s", version)
 	},
 }
 
