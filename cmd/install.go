@@ -22,43 +22,16 @@ var installCmd = &cobra.Command{
 	Long: `Download and install a specific version of Go
 from https://go.dev/dl/.`,
 	Aliases: []string{"i"},
-	Example: "govm install 1.21.0",
+	Example: `Install latest version
+> govm install go
+
+Install specific version
+> govm install 1.21.0`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		return validateArgs(args)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		version := args[0]
-
-		if versionExists(version) {
-			log.Printf("version %s is already installed", version)
-			return
-		}
-
-		url := fmt.Sprintf("https://go.dev/dl/go%s.linux-amd64.tar.gz", version)
-		resp, err := http.Get(url)
-
-		if err != nil {
-			log.Fatal("error connecting to Go release archive", err)
-		}
-
-		defer resp.Body.Close()
-
-		home, _ := os.UserHomeDir()
-		targetDir := filepath.Join(home, ".govm/versions")
-
-		if err = targz.Extract(resp.Body, targetDir); err != nil {
-			log.Fatal("error extracting archive", err)
-		}
-
-		if err = os.Rename(filepath.Join(targetDir, "go"), filepath.Join(targetDir, version)); err != nil {
-			log.Fatal(err)
-		}
-
-		// CHECKME Although the new version can be used immediately shell completion doesn't seem to work until
-		// the terminal is refreshed or rc file is resourced. Is there a way to fix this?
-		if err = os.Symlink(filepath.Join(targetDir, version, "bin/go"), filepath.Join(home, ".govm/go"+version)); err != nil {
-			log.Fatal(err)
-		}
+		install(args[0])
 	},
 }
 
@@ -70,10 +43,66 @@ func validateArgs(args []string) error {
 	version := args[0]
 
 	if !semver.Valid(version) {
-		return fmt.Errorf("invalid version %s", version)
+		if version != "go" {
+			return fmt.Errorf("invalid version %s", version)
+		}
 	}
 
 	return nil
+}
+
+func latestVersion() string {
+	versions := availableVersions()
+	err := semver.Sort(versions, semver.Desc)
+
+	if err != nil {
+		log.Fatalf("error sorting versions: %v", err)
+	}
+
+	return versions[0]
+}
+
+func install(version string) {
+	if version == "go" {
+		version = latestVersion()
+		log.Printf("found latest version %s", version)
+	}
+
+	if versionExists(version) {
+		log.Print("version is already installed")
+		return
+	}
+
+	log.Print("downloading version from remote")
+	url := fmt.Sprintf("https://go.dev/dl/go%s.linux-amd64.tar.gz", version)
+	resp, err := http.Get(url)
+
+	if err != nil {
+		log.Fatal("error connecting to Go release archive", err)
+	}
+
+	defer resp.Body.Close()
+
+	home, _ := os.UserHomeDir()
+	targetDir := filepath.Join(home, ".govm/versions")
+
+	log.Print("extracting archive")
+	if err = targz.Extract(resp.Body, targetDir); err != nil {
+		log.Fatal("error extracting archive", err)
+	}
+
+	if err = os.Rename(filepath.Join(targetDir, "go"), filepath.Join(targetDir, version)); err != nil {
+		log.Fatal(err)
+	}
+
+	// CHECKME Although the new version can be used immediately shell completion doesn't seem to work until
+	// the terminal is refreshed or rc file is resourced. Is there a way to fix this?
+	log.Print("linking files")
+	if err = os.Symlink(filepath.Join(targetDir, version, "bin/go"), filepath.Join(home, ".govm/go"+version)); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("version %s installed", version)
 }
 
 func init() {
