@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/spf13/cobra"
 )
@@ -36,12 +37,26 @@ go1.20.7 run main.go`,
 
 		home, _ := os.UserHomeDir()
 		targetDir := filepath.Join(home, ".govm/versions")
+		goLink, _ := filepath.EvalSymlinks(filepath.Join(home, ".govm/go"))
 
+		// links go to new version x
 		if err := os.RemoveAll(filepath.Join(home, ".govm/go")); err != nil {
 			log.Fatalf("error removing symlink: %v", err)
 		}
 
 		if err := os.Symlink(filepath.Join(targetDir, version, "bin/go"), filepath.Join(home, ".govm/go")); err != nil {
+			log.Fatal(err)
+		}
+
+		// remove x symlink and replace with previous version
+		regex := regexp.MustCompile(`\d+(\.\d+)?(\.\d+)?`)
+		previousVersion := regex.FindString(goLink)
+
+		if err := os.RemoveAll(filepath.Join(home, ".govm/go"+version)); err != nil {
+			log.Fatal(err)
+		}
+
+		if err := os.Symlink(filepath.Join(targetDir, previousVersion, "bin/go"), filepath.Join(home, ".govm/go"+previousVersion)); err != nil {
 			log.Fatal(err)
 		}
 	},
