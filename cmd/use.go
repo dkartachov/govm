@@ -29,6 +29,12 @@ go1.20.7 run main.go`,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		version := args[0]
+		previousVersion := currentVersion()
+
+		if version == previousVersion {
+			log.Print("already using version")
+			return
+		}
 
 		if !versionExists(version) {
 			log.Printf("version %v is not installed", version)
@@ -37,7 +43,6 @@ go1.20.7 run main.go`,
 
 		home, _ := os.UserHomeDir()
 		targetDir := filepath.Join(home, ".govm/versions")
-		goLink, _ := filepath.EvalSymlinks(filepath.Join(home, ".govm/go"))
 
 		// links go to new version x
 		if err := os.RemoveAll(filepath.Join(home, ".govm/go")); err != nil {
@@ -49,9 +54,6 @@ go1.20.7 run main.go`,
 		}
 
 		// remove x symlink and replace with previous version
-		regex := regexp.MustCompile(`\d+(\.\d+)?(\.\d+)?`)
-		previousVersion := regex.FindString(goLink)
-
 		if err := os.RemoveAll(filepath.Join(home, ".govm/go"+version)); err != nil {
 			log.Fatal(err)
 		}
@@ -79,6 +81,14 @@ func versionExists(version string) bool {
 	}
 
 	return false
+}
+
+func currentVersion() string {
+	home, _ := os.UserHomeDir()
+	regex := regexp.MustCompile(`\d+(\.\d+)?(\.\d+)?`)
+	goLink, _ := filepath.EvalSymlinks(filepath.Join(home, ".govm/go"))
+
+	return regex.FindString(goLink)
 }
 
 func init() {
