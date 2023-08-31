@@ -49,6 +49,19 @@ func list() {
 }
 
 func listRemote() {
+	versions := availableVersions()
+	err := semver.Sort(versions, semver.Asc)
+
+	if err != nil {
+		log.Fatalf("error sorting versions: %v", err)
+	}
+
+	for _, v := range versions {
+		fmt.Println(v)
+	}
+}
+
+func availableVersions() []string {
 	r := git.NewRemote(memory.NewStorage(), &config.RemoteConfig{
 		URLs: []string{"https://github.com/golang/go"},
 	})
@@ -78,15 +91,7 @@ func listRemote() {
 		}
 	}
 
-	err = semver.Sort(versions)
-
-	if err != nil {
-		log.Fatalf("error sorting versions: %v", err)
-	}
-
-	for _, v := range versions {
-		fmt.Println(v)
-	}
+	return versions
 }
 
 func init() {
