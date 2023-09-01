@@ -19,7 +19,8 @@ var uninstallCmd = &cobra.Command{
 	Short: "uninstall a locally installed version",
 	Long:  `Uninstall a locally installed version of Go.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		filteredArgs, err := validateManyArgs(args)
+		current, _ := currentVersion()
+		filteredArgs, err := validateManyVersions(args)
 
 		if err != nil {
 			return err
@@ -32,7 +33,13 @@ var uninstallCmd = &cobra.Command{
 			}
 
 			home, _ := os.UserHomeDir()
-			err := os.Remove(filepath.Join(home, ".govm", "go"+version))
+			var err error
+
+			if version == current {
+				err = os.Remove(filepath.Join(home, ".govm/go"))
+			} else {
+				err = os.Remove(filepath.Join(home, ".govm", "go"+version))
+			}
 
 			if err != nil {
 				log.Fatalf("error removing version symlink: %v", err)
@@ -51,9 +58,9 @@ var uninstallCmd = &cobra.Command{
 	},
 }
 
-func validateManyArgs(args []string) ([]string, error) {
+func validateManyVersions(args []string) ([]string, error) {
 	if len(args) == 0 {
-		return []string{}, fmt.Errorf("must provide at least 1 version to uninstall")
+		return []string{}, fmt.Errorf("must provide at least 1 argument")
 	}
 
 	var filteredArgs []string
