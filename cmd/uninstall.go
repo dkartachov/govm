@@ -4,10 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/dkartachov/govm/pkg/semver"
 	"github.com/spf13/cobra"
 )
 
@@ -16,32 +18,55 @@ var uninstallCmd = &cobra.Command{
 	Use:   "uninstall [version]",
 	Short: "uninstall a locally installed version",
 	Long:  `Uninstall a locally installed version of Go.`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		return validateArgs(args)
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		version := args[0]
-
-		if !versionExists(version) {
-			log.Printf("version %s is not installed", version)
-			return
-		}
-
-		home, _ := os.UserHomeDir()
-		err := os.Remove(filepath.Join(home, ".govm", "go"+version))
+	RunE: func(cmd *cobra.Command, args []string) error {
+		filteredArgs, err := validateManyArgs(args)
 
 		if err != nil {
-			log.Fatalf("error removing version symlink: %v", err)
+			return err
 		}
 
-		err = os.RemoveAll(filepath.Join(home, ".govm/versions", version))
+		for _, version := range filteredArgs {
+			if !versionExists(version) {
+				log.Printf("skipping %s: not installed", version)
+				continue
+			}
 
-		if err != nil {
-			log.Fatalf("error removing version: %v", err)
+			home, _ := os.UserHomeDir()
+			err := os.Remove(filepath.Join(home, ".govm", "go"+version))
+
+			if err != nil {
+				log.Fatalf("error removing version symlink: %v", err)
+			}
+
+			err = os.RemoveAll(filepath.Join(home, ".govm/versions", version))
+
+			if err != nil {
+				log.Fatalf("error removing version: %v", err)
+			}
+
+			log.Printf("version %s has been uninstalled", version)
 		}
 
-		log.Printf("version %s has been uninstalled", version)
+		return nil
 	},
+}
+
+func validateManyArgs(args []string) ([]string, error) {
+	if len(args) == 0 {
+		return []string{}, fmt.Errorf("must provide at least 1 version to uninstall")
+	}
+
+	var filteredArgs []string
+
+	for i := 0; i < len(args); i++ {
+		if semver.Valid(args[i]) {
+			filteredArgs = append(filteredArgs, args[i])
+		} else {
+			log.Printf("skipping %s: invalid version", args[i])
+		}
+	}
+
+	return filteredArgs, nil
 }
 
 func init() {
