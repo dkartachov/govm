@@ -96,5 +96,6 @@ func availableVersions() []string {
 
 func init() {
 	rootCmd.AddCommand(listCmd)
+	// CHECKME should this be a separate command instead?
 	listCmd.Flags().Bool("remote", false, "list available versions to download")
 }
