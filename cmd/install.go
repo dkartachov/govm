@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/dkartachov/govm/pkg/semver"
 	"github.com/dkartachov/govm/pkg/targz"
@@ -54,18 +55,19 @@ func validateVersion(args []string) error {
 	return nil
 }
 
-// TODO filter out duplicate versions
 func validateVersionsToInstall(args []string) ([]string, error) {
 	if len(args) == 0 {
 		return []string{}, fmt.Errorf("must provide at least 1 argument")
 	}
 
-	var filteredArgs []string
+	filteredArgs := []string{}
 
 	for i := 0; i < len(args); i++ {
 		version := args[i]
 		if semver.Valid(version) || version == "go" {
-			filteredArgs = append(filteredArgs, version)
+			if !slices.Contains[[]string](filteredArgs, version) {
+				filteredArgs = append(filteredArgs, version)
+			}
 		} else {
 			log.Printf("skipping %s: invalid version", version)
 		}
