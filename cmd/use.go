@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -25,11 +26,11 @@ use the locally installed binary directly. For example:
 
 go1.20.7 run main.go`,
 	Args: func(cmd *cobra.Command, args []string) error {
-		return validateArgs(args)
+		return validateVersion(args)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		version := args[0]
-		previousVersion := currentVersion()
+		previousVersion, _ := currentVersion()
 
 		if version == previousVersion {
 			log.Print("already using version")
@@ -46,20 +47,22 @@ go1.20.7 run main.go`,
 
 		// links go to new version x
 		if err := os.RemoveAll(filepath.Join(home, ".govm/go")); err != nil {
-			log.Fatalf("error removing symlink: %v", err)
+			log.Fatalf("error removing default version symlink: %v", err)
 		}
 
 		if err := os.Symlink(filepath.Join(targetDir, version, "bin/go"), filepath.Join(home, ".govm/go")); err != nil {
-			log.Fatal(err)
+			log.Fatalf("error linking default version: %v", err)
 		}
 
 		// remove x symlink and replace with previous version
 		if err := os.RemoveAll(filepath.Join(home, ".govm/go"+version)); err != nil {
-			log.Fatal(err)
+			log.Fatalf("error removing versioned symlink: %v", err)
 		}
 
-		if err := os.Symlink(filepath.Join(targetDir, previousVersion, "bin/go"), filepath.Join(home, ".govm/go"+previousVersion)); err != nil {
-			log.Fatal(err)
+		if previousVersion != "" {
+			if err := os.Symlink(filepath.Join(targetDir, previousVersion, "bin/go"), filepath.Join(home, ".govm/go"+previousVersion)); err != nil {
+				log.Fatalf("error linking previous version: %v", err)
+			}
 		}
 
 		log.Printf("go ==> %s", version)
@@ -83,12 +86,16 @@ func versionExists(version string) bool {
 	return false
 }
 
-func currentVersion() string {
+func currentVersion() (string, error) {
 	home, _ := os.UserHomeDir()
 	regex := regexp.MustCompile(`\d+(\.\d+)?(\.\d+)?`)
-	goLink, _ := filepath.EvalSymlinks(filepath.Join(home, ".govm/go"))
+	goLink, err := filepath.EvalSymlinks(filepath.Join(home, ".govm/go"))
 
-	return regex.FindString(goLink)
+	if err != nil {
+		return "", fmt.Errorf("error evaluating symlink: %v", err)
+	}
+
+	return regex.FindString(goLink), nil
 }
 
 func init() {
