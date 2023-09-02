@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/dkartachov/govm/pkg/semver"
 	"github.com/spf13/cobra"
@@ -19,61 +20,70 @@ var uninstallCmd = &cobra.Command{
 	Short: "uninstall a locally installed version",
 	Long:  `Uninstall a locally installed version of Go.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		current, _ := currentVersion()
-		filteredArgs, err := validateManyVersions(args)
-
-		if err != nil {
-			return err
-		}
-
-		for _, version := range filteredArgs {
-			if !versionExists(version) {
-				log.Printf("skipping %s: not installed", version)
-				continue
-			}
-
-			home, _ := os.UserHomeDir()
-			var err error
-
-			if version == current {
-				err = os.Remove(filepath.Join(home, ".govm/go"))
-			} else {
-				err = os.Remove(filepath.Join(home, ".govm", "go"+version))
-			}
-
-			if err != nil {
-				log.Fatalf("error removing version symlink: %v", err)
-			}
-
-			err = os.RemoveAll(filepath.Join(home, ".govm/versions", version))
-
-			if err != nil {
-				log.Fatalf("error removing version: %v", err)
-			}
-
-			log.Printf("version %s has been uninstalled", version)
-		}
-
-		return nil
+		return uninstall(args)
 	},
 }
 
-func validateManyVersions(args []string) ([]string, error) {
+// TODO add "all" option to facilate uninstalling all versions, most likely used
+// to remove govm from machine. As a fail safe user will need to confirm this action.
+func validateVersionsToUninstall(args []string) ([]string, error) {
 	if len(args) == 0 {
 		return []string{}, fmt.Errorf("must provide at least 1 argument")
 	}
 
-	var filteredArgs []string
+	filteredArgs := []string{}
 
 	for i := 0; i < len(args); i++ {
-		if semver.Valid(args[i]) {
-			filteredArgs = append(filteredArgs, args[i])
+		version := args[i]
+		if semver.Valid(version) {
+			if !slices.Contains[[]string](filteredArgs, version) {
+				filteredArgs = append(filteredArgs, version)
+			}
 		} else {
-			log.Printf("skipping %s: invalid version", args[i])
+			log.Printf("skipping %s: invalid version", version)
 		}
 	}
 
 	return filteredArgs, nil
+}
+
+func uninstall(args []string) error {
+	current, _ := currentVersion()
+	filteredArgs, err := validateVersionsToUninstall(args)
+
+	if err != nil {
+		return err
+	}
+
+	for _, version := range filteredArgs {
+		if !versionExists(version) {
+			log.Printf("skipping %s: not installed", version)
+			continue
+		}
+
+		home, _ := os.UserHomeDir()
+		var err error
+
+		if version == current {
+			err = os.Remove(filepath.Join(home, ".govm/go"))
+		} else {
+			err = os.Remove(filepath.Join(home, ".govm", "go"+version))
+		}
+
+		if err != nil {
+			log.Fatalf("error removing version symlink: %v", err)
+		}
+
+		err = os.RemoveAll(filepath.Join(home, ".govm/versions", version))
+
+		if err != nil {
+			log.Fatalf("error removing version: %v", err)
+		}
+
+		log.Printf("version %s has been uninstalled", version)
+	}
+
+	return nil
 }
 
 func init() {
