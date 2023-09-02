@@ -28,6 +28,9 @@ go1.20.7 run main.go`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		return validateVersion(args)
 	},
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return localVersions(), cobra.ShellCompDirectiveDefault
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		version := args[0]
 		previousVersion, _ := currentVersion()

@@ -23,16 +23,27 @@ var listCmd = &cobra.Command{
 	},
 }
 
-func list() {
+func localVersions() []string {
 	home, _ := os.UserHomeDir()
 	d, err := os.ReadDir(filepath.Join(home, ".govm/versions"))
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error retrieving locally installed versions: %v", err)
 	}
 
+	versions := []string{}
 	for _, e := range d {
-		fmt.Println(e.Name())
+		versions = append(versions, e.Name())
+	}
+
+	return versions
+}
+
+func list() {
+	versions := localVersions()
+
+	for _, v := range versions {
+		fmt.Println(v)
 	}
 }
 
