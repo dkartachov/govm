@@ -24,7 +24,7 @@ var uninstallCmd = &cobra.Command{
 	},
 }
 
-// TODO add "all" option to facilate uninstalling all versions, most likely used
+// TODO add "all" option to facilate uninstalling all versions? It will most likely be used
 // to remove govm from machine. As a fail safe user will need to confirm this action.
 func validateVersionsToUninstall(args []string) ([]string, error) {
 	if len(args) == 0 {
