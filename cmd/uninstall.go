@@ -19,6 +19,9 @@ var uninstallCmd = &cobra.Command{
 	Use:   "uninstall [version]",
 	Short: "uninstall a locally installed version",
 	Long:  `Uninstall a locally installed version of Go.`,
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return localVersions(), cobra.ShellCompDirectiveDefault
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return uninstall(args)
 	},
