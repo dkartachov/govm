@@ -15,7 +15,7 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:     "list",
-	Short:   "List versions of Go",
+	Short:   "List locally installed versions",
 	Long:    `List all locally installed versions of Go.`,
 	Aliases: []string{"ls"},
 	Run: func(cmd *cobra.Command, args []string) {
