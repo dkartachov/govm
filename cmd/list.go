@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // listCmd represents the list command
@@ -24,8 +24,12 @@ var listCmd = &cobra.Command{
 }
 
 func localVersions() []string {
-	home, _ := os.UserHomeDir()
-	d, err := os.ReadDir(filepath.Join(home, ".govm/versions"))
+	govmVersions := viper.GetString("GOVM_VERSIONS")
+	if err := os.MkdirAll(govmVersions, os.ModePerm); err != nil {
+		panic(err)
+	}
+
+	d, err := os.ReadDir(govmVersions)
 
 	if err != nil {
 		log.Fatalf("error retrieving locally installed versions: %v", err)

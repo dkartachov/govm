@@ -14,6 +14,7 @@ import (
 	"github.com/dkartachov/govm/pkg/semver"
 	"github.com/dkartachov/govm/pkg/targz"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // installCmd represents the install command
@@ -112,22 +113,28 @@ func install(versions []string) {
 			continue
 		}
 
-		home, _ := os.UserHomeDir()
-		targetDir := filepath.Join(home, ".govm/versions")
+		// TODO validate config file earlier to stop execution if empty values are found
+		govmBin := viper.GetString("GOVM_BIN")
+		govmVersions := viper.GetString("GOVM_VERSIONS")
+
+		err = os.MkdirAll(govmVersions, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
 
 		log.Printf("extracting archive for %s", v)
-		if err = targz.Extract(resp.Body, targetDir); err != nil {
+		if err = targz.Extract(resp.Body, govmVersions); err != nil {
 			log.Fatalf("error extracting archive for %s: %v", v, err)
 		}
 
-		if err = os.Rename(filepath.Join(targetDir, "go"), filepath.Join(targetDir, v)); err != nil {
+		if err = os.Rename(filepath.Join(govmVersions, "go"), filepath.Join(govmVersions, v)); err != nil {
 			log.Fatal(err)
 		}
 
 		// CHECKME Although the new version can be used immediately shell completion doesn't seem to work until
 		// the terminal is refreshed or rc file is resourced. Is there a way to fix this?
 		log.Printf("linking files for %s", v)
-		if err = os.Symlink(filepath.Join(targetDir, v, "bin/go"), filepath.Join(home, ".govm/bin/go"+v)); err != nil {
+		if err = os.Symlink(filepath.Join(govmVersions, v, "bin/go"), filepath.Join(govmBin, "go"+v)); err != nil {
 			log.Fatal(err)
 		}
 

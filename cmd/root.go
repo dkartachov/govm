@@ -4,9 +4,11 @@ Copyright © 2023 Denis Kartachov <kartachovd@gmail.com>
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -33,4 +35,13 @@ func Execute() {
 	}
 }
 
-func init() {}
+func init() {
+	viper.AddConfigPath(".")
+	viper.SetConfigName("govm")
+	viper.SetConfigType("env")
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("error reading config file: %v", err))
+	}
+}

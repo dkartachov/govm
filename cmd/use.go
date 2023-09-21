@@ -11,6 +11,7 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // useCmd represents the use command
@@ -45,25 +46,25 @@ go1.20.7 run main.go`,
 			return
 		}
 
-		home, _ := os.UserHomeDir()
-		targetDir := filepath.Join(home, ".govm/versions")
+		govmBin := viper.GetString("GOVM_BIN")
+		govmVersions := viper.GetString("GOVM_VERSIONS")
 
 		// links go to new version x
-		if err := os.RemoveAll(filepath.Join(home, ".govm/bin/go")); err != nil {
+		if err := os.RemoveAll(filepath.Join(govmBin, "go")); err != nil {
 			log.Fatalf("error removing default version symlink: %v", err)
 		}
 
-		if err := os.Symlink(filepath.Join(targetDir, version, "bin/go"), filepath.Join(home, ".govm/bin/go")); err != nil {
+		if err := os.Symlink(filepath.Join(govmVersions, version, "bin/go"), filepath.Join(govmBin, "go")); err != nil {
 			log.Fatalf("error linking default version: %v", err)
 		}
 
 		// remove x symlink and replace with previous version
-		if err := os.RemoveAll(filepath.Join(home, ".govm/bin", "go"+version)); err != nil {
+		if err := os.RemoveAll(filepath.Join(govmBin, "go"+version)); err != nil {
 			log.Fatalf("error removing versioned symlink: %v", err)
 		}
 
 		if previousVersion != "" {
-			if err := os.Symlink(filepath.Join(targetDir, previousVersion, "bin/go"), filepath.Join(home, ".govm/bin/go"+previousVersion)); err != nil {
+			if err := os.Symlink(filepath.Join(govmVersions, previousVersion, "bin/go"), filepath.Join(govmBin, "go"+previousVersion)); err != nil {
 				log.Fatalf("error linking previous version: %v", err)
 			}
 		}
@@ -73,8 +74,12 @@ go1.20.7 run main.go`,
 }
 
 func versionExists(version string) bool {
-	home, _ := os.UserHomeDir()
-	dir, err := os.ReadDir(filepath.Join(home, ".govm/versions"))
+	govmVersions := viper.GetString("GOVM_VERSIONS")
+	if err := os.MkdirAll(govmVersions, os.ModePerm); err != nil {
+		panic(err)
+	}
+
+	dir, err := os.ReadDir(govmVersions)
 
 	if err != nil {
 		log.Fatalf("error reading directory: %v", err)
@@ -90,9 +95,9 @@ func versionExists(version string) bool {
 }
 
 func currentVersion() (string, error) {
-	home, _ := os.UserHomeDir()
+	govmBin := viper.GetString("GOVM_BIN")
 	regex := regexp.MustCompile(`\d+(\.\d+)?(\.\d+)?`)
-	goLink, err := filepath.EvalSymlinks(filepath.Join(home, ".govm/bin/go"))
+	goLink, err := filepath.EvalSymlinks(filepath.Join(govmBin, "go"))
 
 	if err != nil {
 		return "", fmt.Errorf("error evaluating symlink: %v", err)

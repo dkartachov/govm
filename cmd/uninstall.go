@@ -12,6 +12,7 @@ import (
 
 	"github.com/dkartachov/govm/pkg/semver"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // uninstallCmd represents the uninstall command
@@ -64,20 +65,21 @@ func uninstall(args []string) error {
 			continue
 		}
 
-		home, _ := os.UserHomeDir()
+		govmBin := viper.GetString("GOVM_BIN")
+		govmVersions := viper.GetString("GOVM_VERSIONS")
 		var err error
 
 		if version == current {
-			err = os.Remove(filepath.Join(home, ".govm/bin/go"))
+			err = os.Remove(filepath.Join(govmBin, "go"))
 		} else {
-			err = os.Remove(filepath.Join(home, ".govm/bin", "go"+version))
+			err = os.Remove(filepath.Join(govmBin, "go"+version))
 		}
 
 		if err != nil {
 			log.Fatalf("error removing version symlink: %v", err)
 		}
 
-		err = os.RemoveAll(filepath.Join(home, ".govm/versions", version))
+		err = os.RemoveAll(filepath.Join(govmVersions, version))
 
 		if err != nil {
 			log.Fatalf("error removing version: %v", err)
