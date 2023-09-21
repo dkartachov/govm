@@ -68,9 +68,9 @@ func uninstall(args []string) error {
 		var err error
 
 		if version == current {
-			err = os.Remove(filepath.Join(home, ".govm/go"))
+			err = os.Remove(filepath.Join(home, ".govm/bin/go"))
 		} else {
-			err = os.Remove(filepath.Join(home, ".govm", "go"+version))
+			err = os.Remove(filepath.Join(home, ".govm/bin", "go"+version))
 		}
 
 		if err != nil {

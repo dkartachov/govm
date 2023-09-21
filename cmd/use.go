@@ -49,21 +49,21 @@ go1.20.7 run main.go`,
 		targetDir := filepath.Join(home, ".govm/versions")
 
 		// links go to new version x
-		if err := os.RemoveAll(filepath.Join(home, ".govm/go")); err != nil {
+		if err := os.RemoveAll(filepath.Join(home, ".govm/bin/go")); err != nil {
 			log.Fatalf("error removing default version symlink: %v", err)
 		}
 
-		if err := os.Symlink(filepath.Join(targetDir, version, "bin/go"), filepath.Join(home, ".govm/go")); err != nil {
+		if err := os.Symlink(filepath.Join(targetDir, version, "bin/go"), filepath.Join(home, ".govm/bin/go")); err != nil {
 			log.Fatalf("error linking default version: %v", err)
 		}
 
 		// remove x symlink and replace with previous version
-		if err := os.RemoveAll(filepath.Join(home, ".govm/go"+version)); err != nil {
+		if err := os.RemoveAll(filepath.Join(home, ".govm/bin", "go"+version)); err != nil {
 			log.Fatalf("error removing versioned symlink: %v", err)
 		}
 
 		if previousVersion != "" {
-			if err := os.Symlink(filepath.Join(targetDir, previousVersion, "bin/go"), filepath.Join(home, ".govm/go"+previousVersion)); err != nil {
+			if err := os.Symlink(filepath.Join(targetDir, previousVersion, "bin/go"), filepath.Join(home, ".govm/bin/go"+previousVersion)); err != nil {
 				log.Fatalf("error linking previous version: %v", err)
 			}
 		}
@@ -92,7 +92,7 @@ func versionExists(version string) bool {
 func currentVersion() (string, error) {
 	home, _ := os.UserHomeDir()
 	regex := regexp.MustCompile(`\d+(\.\d+)?(\.\d+)?`)
-	goLink, err := filepath.EvalSymlinks(filepath.Join(home, ".govm/go"))
+	goLink, err := filepath.EvalSymlinks(filepath.Join(home, ".govm/bin/go"))
 
 	if err != nil {
 		return "", fmt.Errorf("error evaluating symlink: %v", err)

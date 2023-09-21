@@ -127,7 +127,7 @@ func install(versions []string) {
 		// CHECKME Although the new version can be used immediately shell completion doesn't seem to work until
 		// the terminal is refreshed or rc file is resourced. Is there a way to fix this?
 		log.Printf("linking files for %s", v)
-		if err = os.Symlink(filepath.Join(targetDir, v, "bin/go"), filepath.Join(home, ".govm/go"+v)); err != nil {
+		if err = os.Symlink(filepath.Join(targetDir, v, "bin/go"), filepath.Join(home, ".govm/bin/go"+v)); err != nil {
 			log.Fatal(err)
 		}
 
