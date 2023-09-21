@@ -1,17 +1,29 @@
 # Govm
 Manage Go versions on your local machine and seemingly test how your applications run on different versions
 
+## Installation
+### Linux
+1. Download the latest [release](https://github.com/dkartachov/govm/releases) and store it in `$HOME/.govm/bin`
+```
+mkdir -p $HOME/.govm/bin && curl -L github.com/dkartachov/govm/releases/download/v1.0.0/govm -o $HOME/.govm/bin/govm
+```
+2. Add `$HOME/.govm/bin` to the `PATH` environment variable:
+```
+export PATH=$PATH:$HOME/.govm/bin
+```
+
+
 ## Quickstart guide
 ### Install new version
-Install a specific version of Go using the semantic versioning scheme
+Install the latest version of Go
+```
+> govm install go
+```
+or install a specific version using semantic versioning
 ```
 > govm install 1.21.0
 > govm install 1.21
 > govm install 1
-```
-or grab the latest version by passing in "go"
-```
-> govm install go
 ```
 
 ### Change default version
