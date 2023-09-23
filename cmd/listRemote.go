@@ -32,7 +32,11 @@ func listRemote(limit int) {
 	err := semver.Sort(versions, semver.Asc)
 
 	if limit > 0 {
-		versions = versions[len(versions)-limit:]
+		numVersions := len(versions)
+		if limit > numVersions {
+			limit = numVersions
+		}
+		versions = versions[numVersions-limit:]
 	}
 
 	if err != nil {
@@ -79,5 +83,5 @@ func availableVersions() []string {
 
 func init() {
 	rootCmd.AddCommand(listRemoteCmd)
-	listRemoteCmd.Flags().Int("limit", 0, "limit the versions returned. Default 0 (no limit)")
+	listRemoteCmd.Flags().Int("limit", 10, "limit the amount returned (default 10), 0 for no limit")
 }
