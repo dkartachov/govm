@@ -100,7 +100,8 @@ func install(versions []string) {
 			continue
 		}
 
-		log.Printf("downloading version %s from remote", v)
+		log.Printf("[v%s] downloading from remote", v)
+		// TODO add support for other distributions
 		url := fmt.Sprintf("https://go.dev/dl/go%s.linux-amd64.tar.gz", v)
 		resp, err := http.Get(url)
 
@@ -122,7 +123,7 @@ func install(versions []string) {
 			panic(err)
 		}
 
-		log.Printf("extracting archive for %s", v)
+		log.Printf("[v%s] extracting archive", v)
 		if err = targz.Extract(resp.Body, govmVersions); err != nil {
 			log.Fatalf("error extracting archive for %s: %v", v, err)
 		}
@@ -133,12 +134,12 @@ func install(versions []string) {
 
 		// CHECKME Although the new version can be used immediately shell completion doesn't seem to work until
 		// the terminal is refreshed or rc file is resourced. Is there a way to fix this?
-		log.Printf("linking files for %s", v)
+		log.Printf("[v%s] linking files", v)
 		if err = os.Symlink(filepath.Join(govmVersions, v, "bin/go"), filepath.Join(govmBin, "go"+v)); err != nil {
 			log.Fatal(err)
 		}
 
-		log.Printf("version %s installed", v)
+		log.Printf("[v%s] installed", v)
 		resp.Body.Close()
 	}
 }
