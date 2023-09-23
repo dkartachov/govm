@@ -83,5 +83,5 @@ func availableVersions() []string {
 
 func init() {
 	rootCmd.AddCommand(listRemoteCmd)
-	listRemoteCmd.Flags().Int("limit", 10, "limit the amount returned (default 10), 0 for no limit")
+	listRemoteCmd.Flags().Int("limit", 10, "limit the amount returned, 0 for no limit")
 }
