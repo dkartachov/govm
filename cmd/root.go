@@ -5,7 +5,10 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,12 +20,19 @@ var rootCmd = &cobra.Command{
 	Short: "Manage different versions of Go on your machine",
 	Long: `Govm is a CLI application that allows developers to manage
 different versions of Go on their machine. Add, remove and switch
-between locally installed versions with ease. You can also test
-your application on a different version without switching by running 
-the locally installed binary directly. For example: go1.20.7 run main.go
+between installed versions with ease. 
+
+You can also test your application on a different version without 
+switching by running the installed binary directly. For example: 
+
+go1.20.7 run main.go
+
+Yes, I am aware that upgrading Go and managing different versions
+is fairly easy to do without a manager. However, please allow me to 
+elaborate on the motivation behind creating this tool:
 
 "Why spend 5 minutes doing something when you can spend
-5 days automating it?" - Anonymous
+5 days automating it?" - Some developer somewhere
 `,
 }
 
@@ -36,12 +46,19 @@ func Execute() {
 }
 
 func init() {
-	viper.AddConfigPath(".")
-	viper.SetConfigName("govm")
-	viper.SetConfigType("env")
+	// CHECKME best place to set this?
+	log.SetFlags(0)
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(fmt.Errorf("error reading config file: %v", err))
+	o := runtime.GOOS
+	a := runtime.GOARCH
+
+	// TODO support other platforms?
+	if o != "linux" || a != "amd64" {
+		fmt.Printf("platform not supported: %s/%s. Sorry!\n", o, a)
+		os.Exit(1)
 	}
+
+	home, _ := os.UserHomeDir()
+	viper.Set("GOVM_BIN", filepath.Join(home, ".govm/bin"))
+	viper.Set("GOVM_VERSIONS", filepath.Join(home, ".govm/versions"))
 }
