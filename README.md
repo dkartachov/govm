@@ -5,7 +5,9 @@ Manage Go versions on your local machine and seemingly test how your application
 ### Linux
 1. Download the latest [release](https://github.com/dkartachov/govm/releases) and store it in `$HOME/.govm/bin`
 ```
-mkdir -p $HOME/.govm/bin && curl -L github.com/dkartachov/govm/releases/download/v1.0.0/govm -o $HOME/.govm/bin/govm
+mkdir -p $HOME/.govm/bin && \
+curl -L github.com/dkartachov/govm/releases/download/1.0.0/govm -o $HOME/.govm/bin/govm && \
+chmod +x $HOME/.govm/bin/govm
 ```
 2. Add `$HOME/.govm/bin` to the `PATH` environment variable:
 ```
