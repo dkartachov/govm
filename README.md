@@ -12,7 +12,6 @@ mkdir -p $HOME/.govm/bin && curl -L github.com/dkartachov/govm/releases/download
 export PATH=$PATH:$HOME/.govm/bin
 ```
 
-
 ## Quickstart guide
 ### Install new version
 Install the latest version of Go
