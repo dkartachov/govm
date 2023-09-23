@@ -96,7 +96,7 @@ func install(versions []string) {
 		}
 
 		if versionExists(v) {
-			log.Printf("%s is already installed", v)
+			log.Printf("version %s is already installed", v)
 			continue
 		}
 
